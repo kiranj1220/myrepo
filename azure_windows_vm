@@ -1,1 +1,4 @@
-
+terraform init
+terraform plan
+terraform refresh 
+terraform apply
