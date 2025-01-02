@@ -1,0 +1,45 @@
+import os
+from azure.identity import AzureCliCredential
+from azure.mgmt.resource import ResourceManagementClient
+
+# Ensure the subscription ID is set as an environment variable or provide a default
+subscription_id = os.environ.get("SUBSCRIPTION_ID", "<your-subscription-id>")
+
+# Authenticate using the Azure CLI credentials
+credential = AzureCliCredential()
+
+# Initialize the Resource Management client
+resource_client = ResourceManagementClient(credential, subscription_id)
+
+# Define the source and destination resource groups
+source_name = "sourceRG"
+destination_name = "destinationRG"
+resources_to_move = ["app1", "app2"]
+
+try:
+    # Retrieve the destination resource group
+    destination_resource_group = resource_client.resource_groups.get(destination_name)
+    target_resource_group_id = destination_resource_group.id
+
+    # Retrieve the resources in the source resource group
+    resources = [
+        resource for resource in resource_client.resources.list_by_resource_group(source_name)
+        if resource.name in resources_to_move
+    ]
+
+    # Get the IDs of the resources to be moved
+    resource_ids = [resource.id for resource in resources]
+
+    # Validate the resources before moving
+    validate_move_resources_result = resource_client.resources.begin_validate_move_resources(
+        source_name,
+        {
+            "resources": resource_ids,
+            "target_resource_group": target_resource_group_id
+        }
+    ).result()
+
+    print("Validate move resources result: {}".format(validate_move_resources_result))
+
+except Exception as e:
+    print(f"An error occurred: {e}")
