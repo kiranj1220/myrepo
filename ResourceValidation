@@ -1,3 +1,5 @@
+Resource Validation
+use it for validating the resources to move to destination
 import os
 from azure.identity import AzureCliCredential
 from azure.mgmt.resource import ResourceManagementClient
